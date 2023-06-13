@@ -1,5 +1,9 @@
-.env
 /node_modules
 /vendor
 auth.json
 .idea
+wp-config.php
+public/debug.log
+.htaccess
+license.txt
+readme.html

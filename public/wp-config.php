@@ -22,6 +22,7 @@ define('WP_DEBUG', $isDebugModeEnabled);
 define('WP_DEBUG_LOG', env('WP_DEBUG_LOG', false));
 define('WP_DEBUG_DISPLAY', env('WP_DEBUG_DISPLAY', $isDebugModeEnabled));
 define('SCRIPT_DEBUG', env('SCRIPT_DEBUG', $isDebugModeEnabled));
+const FS_METHOD = 'direct';
 
 // The database configuration with database name, username, password,
 // hostname charset and database collate type.
