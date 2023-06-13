@@ -6,12 +6,12 @@
 # https://docs.docker.com/engine/reference/builder/#understand-how-arg-and-from-interact
 ARG PHP_VERSION=8.2
 
-WORKDIR /var/www/html
-
 # "php" stage
 FROM wordpress:php${PHP_VERSION}-fpm-alpine AS wordpress_prod
 
 COPY . /var/www/html
+
+WORKDIR /var/www/html
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
