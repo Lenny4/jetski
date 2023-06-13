@@ -18,6 +18,11 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 ENV COMPOSER_ALLOW_SUPERUSER=1
 ENV PATH="${PATH}:/root/.composer/vendor/bin"
 
+ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
+
+RUN chmod +x /usr/local/bin/install-php-extensions && \
+    install-php-extensions pdo_mysql
+
 # prevent the reinstallation of vendors at every changes in the source code
 RUN set -eux; \
 	composer install --prefer-dist --no-dev --no-scripts --no-progress; \
@@ -25,7 +30,4 @@ RUN set -eux; \
 
 FROM wordpress_prod AS wordpress_dev
 
-ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
-
-RUN chmod +x /usr/local/bin/install-php-extensions && \
-    install-php-extensions xdebug-stable
+RUN install-php-extensions xdebug-stable

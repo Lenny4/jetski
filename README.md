@@ -4,6 +4,13 @@
 git update-index --assume-unchanged .env.local
 ```
 
+Run project:
+```
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+./runc composer install
+```
+Go on http://caddy/
+
 https://stackoverflow.com/questions/3663520/php-auth-user-not-set
 
 tester avec xdebug

@@ -17,8 +17,8 @@
  * @since 1.0.0
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
+if (!defined('ABSPATH')) {
+    exit;
 }
 
 // Load plugin class files.
@@ -33,17 +33,18 @@ require_once 'includes/lib/class-jetski-taxonomy.php';
 /**
  * Returns the main instance of jetski to prevent the need to use globals.
  *
- * @since  1.0.0
  * @return object jetski
+ * @since  1.0.0
  */
-function jetski() {
-	$instance = jetski::instance( __FILE__, '1.0.0' );
+function jetski()
+{
+    $instance = jetski::instance(__FILE__, '1.0.0');
 
-	if ( is_null( $instance->settings ) ) {
-		$instance->settings = jetski_Settings::instance( $instance );
-	}
+    if (is_null($instance->settings)) {
+        $instance->settings = jetski_Settings::instance($instance);
+    }
 
-	return $instance;
+    return $instance;
 }
 
 jetski();

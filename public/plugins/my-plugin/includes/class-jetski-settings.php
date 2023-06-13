@@ -5,498 +5,513 @@
  * @package WordPress Plugin Template/Settings
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
+if (!defined('ABSPATH')) {
+    exit;
 }
 
 /**
  * Settings class.
  */
-class jetski_Settings {
+class jetski_Settings
+{
 
-	/**
-	 * The single instance of jetski_Settings.
-	 *
-	 * @var     object
-	 * @access  private
-	 * @since   1.0.0
-	 */
-	private static $_instance = null; //phpcs:ignore
+    /**
+     * The single instance of jetski_Settings.
+     *
+     * @var     object
+     * @access  private
+     * @since   1.0.0
+     */
+    private static $_instance = null; //phpcs:ignore
 
-	/**
-	 * The main plugin object.
-	 *
-	 * @var     object
-	 * @access  public
-	 * @since   1.0.0
-	 */
-	public $parent = null;
+    /**
+     * The main plugin object.
+     *
+     * @var     object
+     * @access  public
+     * @since   1.0.0
+     */
+    public $parent = null;
 
-	/**
-	 * Prefix for plugin settings.
-	 *
-	 * @var     string
-	 * @access  public
-	 * @since   1.0.0
-	 */
-	public $base = '';
+    /**
+     * Prefix for plugin settings.
+     *
+     * @var     string
+     * @access  public
+     * @since   1.0.0
+     */
+    public $base = '';
 
-	/**
-	 * Available settings for plugin.
-	 *
-	 * @var     array
-	 * @access  public
-	 * @since   1.0.0
-	 */
-	public $settings = array();
+    /**
+     * Available settings for plugin.
+     *
+     * @var     array
+     * @access  public
+     * @since   1.0.0
+     */
+    public $settings = array();
 
-	/**
-	 * Constructor function.
-	 *
-	 * @param object $parent Parent object.
-	 */
-	public function __construct( $parent ) {
-		$this->parent = $parent;
+    /**
+     * Constructor function.
+     *
+     * @param object $parent Parent object.
+     */
+    public function __construct($parent)
+    {
+        $this->parent = $parent;
 
-		$this->base = 'wpt_';
+        $this->base = 'wpt_';
 
-		// Initialise settings.
-		add_action( 'init', array( $this, 'init_settings' ), 11 );
+        // Initialise settings.
+        add_action('init', array($this, 'init_settings'), 11);
 
-		// Register plugin settings.
-		add_action( 'admin_init', array( $this, 'register_settings' ) );
+        // Register plugin settings.
+        add_action('admin_init', array($this, 'register_settings'));
 
-		// Add settings page to menu.
-		add_action( 'admin_menu', array( $this, 'add_menu_item' ) );
+        // Add settings page to menu.
+        add_action('admin_menu', array($this, 'add_menu_item'));
 
-		// Add settings link to plugins page.
-		add_filter(
-			'plugin_action_links_' . plugin_basename( $this->parent->file ),
-			array(
-				$this,
-				'add_settings_link',
-			)
-		);
+        // Add settings link to plugins page.
+        add_filter(
+            'plugin_action_links_' . plugin_basename($this->parent->file),
+            array(
+                $this,
+                'add_settings_link',
+            )
+        );
 
-		// Configure placement of plugin settings page. See readme for implementation.
-		add_filter( $this->base . 'menu_settings', array( $this, 'configure_settings' ) );
-	}
+        // Configure placement of plugin settings page. See readme for implementation.
+        add_filter($this->base . 'menu_settings', array($this, 'configure_settings'));
+    }
 
-	/**
-	 * Initialise settings
-	 *
-	 * @return void
-	 */
-	public function init_settings() {
-		$this->settings = $this->settings_fields();
-	}
+/**
+     * Main jetski_Settings Instance
+     *
+     * Ensures only one instance of jetski_Settings is loaded or can be loaded.
+     *
+     * @param object $parent Object instance.
+     * @return object jetski_Settings instance
+     * @since 1.0.0
+     * @static
+     * @see jetski()
+     */
+    public static function instance($parent)
+    {
+        if (is_null(self::$_instance)) {
+            self::$_instance = new self($parent);
+        }
+        return self::$_instance;
+    }
 
-	/**
-	 * Add settings page to admin menu
-	 *
-	 * @return void
-	 */
-	public function add_menu_item() {
+    /**
+     * Initialise settings
+     *
+     * @return void
+     */
+    public function init_settings()
+    {
+        $this->settings = $this->settings_fields();
+    }
 
-		$args = $this->menu_settings();
+    /**
+     * Build settings fields
+     *
+     * @return array Fields to be displayed on settings page
+     */
+    private function settings_fields()
+    {
 
-		// Do nothing if wrong location key is set.
-		if ( is_array( $args ) && isset( $args['location'] ) && function_exists( 'add_' . $args['location'] . '_page' ) ) {
-			switch ( $args['location'] ) {
-				case 'options':
-				case 'submenu':
-					$page = add_submenu_page( $args['parent_slug'], $args['page_title'], $args['menu_title'], $args['capability'], $args['menu_slug'], $args['function'] );
-					break;
-				case 'menu':
-					$page = add_menu_page( $args['page_title'], $args['menu_title'], $args['capability'], $args['menu_slug'], $args['function'], $args['icon_url'], $args['position'] );
-					break;
-				default:
-					return;
-			}
-			add_action( 'admin_print_styles-' . $page, array( $this, 'settings_assets' ) );
-		}
-	}
+        $settings['standard'] = array(
+            'title' => __('Standard', 'jetski'),
+            'description' => __('These are fairly standard form input fields.', 'jetski'),
+            'fields' => array(
+                array(
+                    'id' => 'text_field',
+                    'label' => __('Some Text', 'jetski'),
+                    'description' => __('This is a standard text field.', 'jetski'),
+                    'type' => 'text',
+                    'default' => '',
+                    'placeholder' => __('Placeholder text', 'jetski'),
+                ),
+                array(
+                    'id' => 'password_field',
+                    'label' => __('A Password', 'jetski'),
+                    'description' => __('This is a standard password field.', 'jetski'),
+                    'type' => 'password',
+                    'default' => '',
+                    'placeholder' => __('Placeholder text', 'jetski'),
+                ),
+                array(
+                    'id' => 'secret_text_field',
+                    'label' => __('Some Secret Text', 'jetski'),
+                    'description' => __('This is a secret text field - any data saved here will not be displayed after the page has reloaded, but it will be saved.', 'jetski'),
+                    'type' => 'text_secret',
+                    'default' => '',
+                    'placeholder' => __('Placeholder text', 'jetski'),
+                ),
+                array(
+                    'id' => 'text_block',
+                    'label' => __('A Text Block', 'jetski'),
+                    'description' => __('This is a standard text area.', 'jetski'),
+                    'type' => 'textarea',
+                    'default' => '',
+                    'placeholder' => __('Placeholder text for this textarea', 'jetski'),
+                ),
+                array(
+                    'id' => 'single_checkbox',
+                    'label' => __('An Option', 'jetski'),
+                    'description' => __('A standard checkbox - if you save this option as checked then it will store the option as \'on\', otherwise it will be an empty string.', 'jetski'),
+                    'type' => 'checkbox',
+                    'default' => '',
+                ),
+                array(
+                    'id' => 'select_box',
+                    'label' => __('A Select Box', 'jetski'),
+                    'description' => __('A standard select box.', 'jetski'),
+                    'type' => 'select',
+                    'options' => array(
+                        'drupal' => 'Drupal',
+                        'joomla' => 'Joomla',
+                        'wordpress' => 'WordPress',
+                    ),
+                    'default' => 'wordpress',
+                ),
+                array(
+                    'id' => 'radio_buttons',
+                    'label' => __('Some Options', 'jetski'),
+                    'description' => __('A standard set of radio buttons.', 'jetski'),
+                    'type' => 'radio',
+                    'options' => array(
+                        'superman' => 'Superman',
+                        'batman' => 'Batman',
+                        'ironman' => 'Iron Man',
+                    ),
+                    'default' => 'batman',
+                ),
+                array(
+                    'id' => 'multiple_checkboxes',
+                    'label' => __('Some Items', 'jetski'),
+                    'description' => __('You can select multiple items and they will be stored as an array.', 'jetski'),
+                    'type' => 'checkbox_multi',
+                    'options' => array(
+                        'square' => 'Square',
+                        'circle' => 'Circle',
+                        'rectangle' => 'Rectangle',
+                        'triangle' => 'Triangle',
+                    ),
+                    'default' => array('circle', 'triangle'),
+                ),
+            ),
+        );
 
-	/**
-	 * Prepare default settings page arguments
-	 *
-	 * @return mixed|void
-	 */
-	private function menu_settings() {
-		return apply_filters(
-			$this->base . 'menu_settings',
-			array(
-				'location'    => 'options', // Possible settings: options, menu, submenu.
-				'parent_slug' => 'options-general.php',
-				'page_title'  => __( 'Plugin Settings', 'jetski' ),
-				'menu_title'  => __( 'Plugin Settings', 'jetski' ),
-				'capability'  => 'manage_options',
-				'menu_slug'   => $this->parent->_token . '_settings',
-				'function'    => array( $this, 'settings_page' ),
-				'icon_url'    => '',
-				'position'    => null,
-			)
-		);
-	}
+        $settings['extra'] = array(
+            'title' => __('Extra', 'jetski'),
+            'description' => __('These are some extra input fields that maybe aren\'t as common as the others.', 'jetski'),
+            'fields' => array(
+                array(
+                    'id' => 'number_field',
+                    'label' => __('A Number', 'jetski'),
+                    'description' => __('This is a standard number field - if this field contains anything other than numbers then the form will not be submitted.', 'jetski'),
+                    'type' => 'number',
+                    'default' => '',
+                    'placeholder' => __('42', 'jetski'),
+                ),
+                array(
+                    'id' => 'colour_picker',
+                    'label' => __('Pick a colour', 'jetski'),
+                    'description' => __('This uses WordPress\' built-in colour picker - the option is stored as the colour\'s hex code.', 'jetski'),
+                    'type' => 'color',
+                    'default' => '#21759B',
+                ),
+                array(
+                    'id' => 'an_image',
+                    'label' => __('An Image', 'jetski'),
+                    'description' => __('This will upload an image to your media library and store the attachment ID in the option field. Once you have uploaded an imge the thumbnail will display above these buttons.', 'jetski'),
+                    'type' => 'image',
+                    'default' => '',
+                    'placeholder' => '',
+                ),
+                array(
+                    'id' => 'multi_select_box',
+                    'label' => __('A Multi-Select Box', 'jetski'),
+                    'description' => __('A standard multi-select box - the saved data is stored as an array.', 'jetski'),
+                    'type' => 'select_multi',
+                    'options' => array(
+                        'linux' => 'Linux',
+                        'mac' => 'Mac',
+                        'windows' => 'Windows',
+                    ),
+                    'default' => array('linux'),
+                ),
+            ),
+        );
 
-	/**
-	 * Container for settings page arguments
-	 *
-	 * @param array $settings Settings array.
-	 *
-	 * @return array
-	 */
-	public function configure_settings( $settings = array() ) {
-		return $settings;
-	}
+        $settings = apply_filters($this->parent->_token . '_settings_fields', $settings);
 
-	/**
-	 * Load settings JS & CSS
-	 *
-	 * @return void
-	 */
-	public function settings_assets() {
+        return $settings;
+    }
 
-		// We're including the farbtastic script & styles here because they're needed for the colour picker
-		// If you're not including a colour picker field then you can leave these calls out as well as the farbtastic dependency for the wpt-admin-js script below.
-		wp_enqueue_style( 'farbtastic' );
-		wp_enqueue_script( 'farbtastic' );
+    /**
+     * Add settings page to admin menu
+     *
+     * @return void
+     */
+    public function add_menu_item()
+    {
 
-		// We're including the WP media scripts here because they're needed for the image upload field.
-		// If you're not including an image upload then you can leave this function call out.
-		wp_enqueue_media();
+        $args = $this->menu_settings();
 
-		wp_register_script( $this->parent->_token . '-settings-js', $this->parent->assets_url . 'js/settings' . $this->parent->script_suffix . '.js', array( 'farbtastic', 'jquery' ), '1.0.0', true );
-		wp_enqueue_script( $this->parent->_token . '-settings-js' );
-	}
+        // Do nothing if wrong location key is set.
+        if (is_array($args) && isset($args['location']) && function_exists('add_' . $args['location'] . '_page')) {
+            switch ($args['location']) {
+                case 'options':
+                case 'submenu':
+                    $page = add_submenu_page($args['parent_slug'], $args['page_title'], $args['menu_title'], $args['capability'], $args['menu_slug'], $args['function']);
+                    break;
+                case 'menu':
+                    $page = add_menu_page($args['page_title'], $args['menu_title'], $args['capability'], $args['menu_slug'], $args['function'], $args['icon_url'], $args['position']);
+                    break;
+                default:
+                    return;
+            }
+            add_action('admin_print_styles-' . $page, array($this, 'settings_assets'));
+        }
+    }
 
-	/**
-	 * Add settings link to plugin list table
-	 *
-	 * @param  array $links Existing links.
-	 * @return array        Modified links.
-	 */
-	public function add_settings_link( $links ) {
-		$settings_link = '<a href="options-general.php?page=' . $this->parent->_token . '_settings">' . __( 'Settings', 'jetski' ) . '</a>';
-		array_push( $links, $settings_link );
-		return $links;
-	}
+    /**
+     * Prepare default settings page arguments
+     *
+     * @return mixed|void
+     */
+    private function menu_settings()
+    {
+        return apply_filters(
+            $this->base . 'menu_settings',
+            array(
+                'location' => 'options', // Possible settings: options, menu, submenu.
+                'parent_slug' => 'options-general.php',
+                'page_title' => __('Plugin Settings', 'jetski'),
+                'menu_title' => __('Plugin Settings', 'jetski'),
+                'capability' => 'manage_options',
+                'menu_slug' => $this->parent->_token . '_settings',
+                'function' => array($this, 'settings_page'),
+                'icon_url' => '',
+                'position' => null,
+            )
+        );
+    }
 
-	/**
-	 * Build settings fields
-	 *
-	 * @return array Fields to be displayed on settings page
-	 */
-	private function settings_fields() {
+    /**
+     * Container for settings page arguments
+     *
+     * @param array $settings Settings array.
+     *
+     * @return array
+     */
+    public function configure_settings($settings = array())
+    {
+        return $settings;
+    }
 
-		$settings['standard'] = array(
-			'title'       => __( 'Standard', 'jetski' ),
-			'description' => __( 'These are fairly standard form input fields.', 'jetski' ),
-			'fields'      => array(
-				array(
-					'id'          => 'text_field',
-					'label'       => __( 'Some Text', 'jetski' ),
-					'description' => __( 'This is a standard text field.', 'jetski' ),
-					'type'        => 'text',
-					'default'     => '',
-					'placeholder' => __( 'Placeholder text', 'jetski' ),
-				),
-				array(
-					'id'          => 'password_field',
-					'label'       => __( 'A Password', 'jetski' ),
-					'description' => __( 'This is a standard password field.', 'jetski' ),
-					'type'        => 'password',
-					'default'     => '',
-					'placeholder' => __( 'Placeholder text', 'jetski' ),
-				),
-				array(
-					'id'          => 'secret_text_field',
-					'label'       => __( 'Some Secret Text', 'jetski' ),
-					'description' => __( 'This is a secret text field - any data saved here will not be displayed after the page has reloaded, but it will be saved.', 'jetski' ),
-					'type'        => 'text_secret',
-					'default'     => '',
-					'placeholder' => __( 'Placeholder text', 'jetski' ),
-				),
-				array(
-					'id'          => 'text_block',
-					'label'       => __( 'A Text Block', 'jetski' ),
-					'description' => __( 'This is a standard text area.', 'jetski' ),
-					'type'        => 'textarea',
-					'default'     => '',
-					'placeholder' => __( 'Placeholder text for this textarea', 'jetski' ),
-				),
-				array(
-					'id'          => 'single_checkbox',
-					'label'       => __( 'An Option', 'jetski' ),
-					'description' => __( 'A standard checkbox - if you save this option as checked then it will store the option as \'on\', otherwise it will be an empty string.', 'jetski' ),
-					'type'        => 'checkbox',
-					'default'     => '',
-				),
-				array(
-					'id'          => 'select_box',
-					'label'       => __( 'A Select Box', 'jetski' ),
-					'description' => __( 'A standard select box.', 'jetski' ),
-					'type'        => 'select',
-					'options'     => array(
-						'drupal'    => 'Drupal',
-						'joomla'    => 'Joomla',
-						'wordpress' => 'WordPress',
-					),
-					'default'     => 'wordpress',
-				),
-				array(
-					'id'          => 'radio_buttons',
-					'label'       => __( 'Some Options', 'jetski' ),
-					'description' => __( 'A standard set of radio buttons.', 'jetski' ),
-					'type'        => 'radio',
-					'options'     => array(
-						'superman' => 'Superman',
-						'batman'   => 'Batman',
-						'ironman'  => 'Iron Man',
-					),
-					'default'     => 'batman',
-				),
-				array(
-					'id'          => 'multiple_checkboxes',
-					'label'       => __( 'Some Items', 'jetski' ),
-					'description' => __( 'You can select multiple items and they will be stored as an array.', 'jetski' ),
-					'type'        => 'checkbox_multi',
-					'options'     => array(
-						'square'    => 'Square',
-						'circle'    => 'Circle',
-						'rectangle' => 'Rectangle',
-						'triangle'  => 'Triangle',
-					),
-					'default'     => array( 'circle', 'triangle' ),
-				),
-			),
-		);
+    /**
+     * Load settings JS & CSS
+     *
+     * @return void
+     */
+    public function settings_assets()
+    {
 
-		$settings['extra'] = array(
-			'title'       => __( 'Extra', 'jetski' ),
-			'description' => __( 'These are some extra input fields that maybe aren\'t as common as the others.', 'jetski' ),
-			'fields'      => array(
-				array(
-					'id'          => 'number_field',
-					'label'       => __( 'A Number', 'jetski' ),
-					'description' => __( 'This is a standard number field - if this field contains anything other than numbers then the form will not be submitted.', 'jetski' ),
-					'type'        => 'number',
-					'default'     => '',
-					'placeholder' => __( '42', 'jetski' ),
-				),
-				array(
-					'id'          => 'colour_picker',
-					'label'       => __( 'Pick a colour', 'jetski' ),
-					'description' => __( 'This uses WordPress\' built-in colour picker - the option is stored as the colour\'s hex code.', 'jetski' ),
-					'type'        => 'color',
-					'default'     => '#21759B',
-				),
-				array(
-					'id'          => 'an_image',
-					'label'       => __( 'An Image', 'jetski' ),
-					'description' => __( 'This will upload an image to your media library and store the attachment ID in the option field. Once you have uploaded an imge the thumbnail will display above these buttons.', 'jetski' ),
-					'type'        => 'image',
-					'default'     => '',
-					'placeholder' => '',
-				),
-				array(
-					'id'          => 'multi_select_box',
-					'label'       => __( 'A Multi-Select Box', 'jetski' ),
-					'description' => __( 'A standard multi-select box - the saved data is stored as an array.', 'jetski' ),
-					'type'        => 'select_multi',
-					'options'     => array(
-						'linux'   => 'Linux',
-						'mac'     => 'Mac',
-						'windows' => 'Windows',
-					),
-					'default'     => array( 'linux' ),
-				),
-			),
-		);
+        // We're including the farbtastic script & styles here because they're needed for the colour picker
+        // If you're not including a colour picker field then you can leave these calls out as well as the farbtastic dependency for the wpt-admin-js script below.
+        wp_enqueue_style('farbtastic');
+        wp_enqueue_script('farbtastic');
 
-		$settings = apply_filters( $this->parent->_token . '_settings_fields', $settings );
+        // We're including the WP media scripts here because they're needed for the image upload field.
+        // If you're not including an image upload then you can leave this function call out.
+        wp_enqueue_media();
 
-		return $settings;
-	}
+        wp_register_script($this->parent->_token . '-settings-js', $this->parent->assets_url . 'js/settings' . $this->parent->script_suffix . '.js', array('farbtastic', 'jquery'), '1.0.0', true);
+        wp_enqueue_script($this->parent->_token . '-settings-js');
+    }
 
-	/**
-	 * Register plugin settings
-	 *
-	 * @return void
-	 */
-	public function register_settings() {
-		if ( is_array( $this->settings ) ) {
+    /**
+     * Add settings link to plugin list table
+     *
+     * @param array $links Existing links.
+     * @return array        Modified links.
+     */
+    public function add_settings_link($links)
+    {
+        $settings_link = '<a href="options-general.php?page=' . $this->parent->_token . '_settings">' . __('Settings', 'jetski') . '</a>';
+        array_push($links, $settings_link);
+        return $links;
+    }
 
-			// Check posted/selected tab.
-			//phpcs:disable
-			$current_section = '';
-			if ( isset( $_POST['tab'] ) && $_POST['tab'] ) {
-				$current_section = $_POST['tab'];
-			} else {
-				if ( isset( $_GET['tab'] ) && $_GET['tab'] ) {
-					$current_section = $_GET['tab'];
-				}
-			}
-			//phpcs:enable
+    /**
+     * Register plugin settings
+     *
+     * @return void
+     */
+    public function register_settings()
+    {
+        if (is_array($this->settings)) {
 
-			foreach ( $this->settings as $section => $data ) {
+            // Check posted/selected tab.
+            //phpcs:disable
+            $current_section = '';
+            if (isset($_POST['tab']) && $_POST['tab']) {
+                $current_section = $_POST['tab'];
+            } else {
+                if (isset($_GET['tab']) && $_GET['tab']) {
+                    $current_section = $_GET['tab'];
+                }
+            }
+            //phpcs:enable
 
-				if ( $current_section && $current_section !== $section ) {
-					continue;
-				}
+            foreach ($this->settings as $section => $data) {
 
-				// Add section to page.
-				add_settings_section( $section, $data['title'], array( $this, 'settings_section' ), $this->parent->_token . '_settings' );
+                if ($current_section && $current_section !== $section) {
+                    continue;
+                }
 
-				foreach ( $data['fields'] as $field ) {
+                // Add section to page.
+                add_settings_section($section, $data['title'], array($this, 'settings_section'), $this->parent->_token . '_settings');
 
-					// Validation callback for field.
-					$validation = '';
-					if ( isset( $field['callback'] ) ) {
-						$validation = $field['callback'];
-					}
+                foreach ($data['fields'] as $field) {
 
-					// Register field.
-					$option_name = $this->base . $field['id'];
-					register_setting( $this->parent->_token . '_settings', $option_name, $validation );
+                    // Validation callback for field.
+                    $validation = '';
+                    if (isset($field['callback'])) {
+                        $validation = $field['callback'];
+                    }
 
-					// Add field to page.
-					add_settings_field(
-						$field['id'],
-						$field['label'],
-						array( $this->parent->admin, 'display_field' ),
-						$this->parent->_token . '_settings',
-						$section,
-						array(
-							'field'  => $field,
-							'prefix' => $this->base,
-						)
-					);
-				}
+                    // Register field.
+                    $option_name = $this->base . $field['id'];
+                    register_setting($this->parent->_token . '_settings', $option_name, $validation);
 
-				if ( ! $current_section ) {
-					break;
-				}
-			}
-		}
-	}
+                    // Add field to page.
+                    add_settings_field(
+                        $field['id'],
+                        $field['label'],
+                        array($this->parent->admin, 'display_field'),
+                        $this->parent->_token . '_settings',
+                        $section,
+                        array(
+                            'field' => $field,
+                            'prefix' => $this->base,
+                        )
+                    );
+                }
 
-	/**
-	 * Settings section.
-	 *
-	 * @param array $section Array of section ids.
-	 * @return void
-	 */
-	public function settings_section( $section ) {
-		$html = '<p> ' . $this->settings[ $section['id'] ]['description'] . '</p>' . "\n";
-		echo $html; //phpcs:ignore
-	}
+                if (!$current_section) {
+                    break;
+                }
+            }
+        }
+    }
 
-	/**
-	 * Load settings page content.
-	 *
-	 * @return void
-	 */
-	public function settings_page() {
+    /**
+     * Settings section.
+     *
+     * @param array $section Array of section ids.
+     * @return void
+     */
+    public function settings_section($section)
+    {
+        $html = '<p> ' . $this->settings[$section['id']]['description'] . '</p>' . "\n";
+        echo $html; //phpcs:ignore
+    }
 
-		// Build page HTML.
-		$html      = '<div class="wrap" id="' . $this->parent->_token . '_settings">' . "\n";
-			$html .= '<h2>' . __( 'Plugin Settings', 'jetski' ) . '</h2>' . "\n";
+        /**
+     * Load settings page content.
+     *
+     * @return void
+     */
+    public function settings_page()
+    {
 
-			$tab = '';
-		//phpcs:disable
-		if ( isset( $_GET['tab'] ) && $_GET['tab'] ) {
-			$tab .= $_GET['tab'];
-		}
-		//phpcs:enable
+        // Build page HTML.
+        $html = '<div class="wrap" id="' . $this->parent->_token . '_settings">' . "\n";
+        $html .= '<h2>' . __('Plugin Settings', 'jetski') . '</h2>' . "\n";
 
-		// Show page tabs.
-		if ( is_array( $this->settings ) && 1 < count( $this->settings ) ) {
+        $tab = '';
+        //phpcs:disable
+        if (isset($_GET['tab']) && $_GET['tab']) {
+            $tab .= $_GET['tab'];
+        }
+        //phpcs:enable
 
-			$html .= '<h2 class="nav-tab-wrapper">' . "\n";
+        // Show page tabs.
+        if (is_array($this->settings) && 1 < count($this->settings)) {
 
-			$c = 0;
-			foreach ( $this->settings as $section => $data ) {
+            $html .= '<h2 class="nav-tab-wrapper">' . "\n";
 
-				// Set tab class.
-				$class = 'nav-tab';
-				if ( ! isset( $_GET['tab'] ) ) { //phpcs:ignore
-					if ( 0 === $c ) {
-						$class .= ' nav-tab-active';
-					}
-				} else {
-					if ( isset( $_GET['tab'] ) && $section == $_GET['tab'] ) { //phpcs:ignore
-						$class .= ' nav-tab-active';
-					}
-				}
+            $c = 0;
+            foreach ($this->settings as $section => $data) {
 
-				// Set tab link.
-				$tab_link = add_query_arg( array( 'tab' => $section ) );
-				if ( isset( $_GET['settings-updated'] ) ) { //phpcs:ignore
-					$tab_link = remove_query_arg( 'settings-updated', $tab_link );
-				}
+                // Set tab class.
+                $class = 'nav-tab';
+                if (!isset($_GET['tab'])) { //phpcs:ignore
+                    if (0 === $c) {
+                        $class .= ' nav-tab-active';
+                    }
+                } else {
+                    if (isset($_GET['tab']) && $section == $_GET['tab']) { //phpcs:ignore
+                        $class .= ' nav-tab-active';
+                    }
+                }
 
-				// Output tab.
-				$html .= '<a href="' . $tab_link . '" class="' . esc_attr( $class ) . '">' . esc_html( $data['title'] ) . '</a>' . "\n";
+                // Set tab link.
+                $tab_link = add_query_arg(array('tab' => $section));
+                if (isset($_GET['settings-updated'])) { //phpcs:ignore
+                    $tab_link = remove_query_arg('settings-updated', $tab_link);
+                }
 
-				++$c;
-			}
+                // Output tab.
+                $html .= '<a href="' . $tab_link . '" class="' . esc_attr($class) . '">' . esc_html($data['title']) . '</a>' . "\n";
 
-			$html .= '</h2>' . "\n";
-		}
+                ++$c;
+            }
 
-			$html .= '<form method="post" action="options.php" enctype="multipart/form-data">' . "\n";
+            $html .= '</h2>' . "\n";
+        }
 
-				// Get settings fields.
-				ob_start();
-				settings_fields( $this->parent->_token . '_settings' );
-				do_settings_sections( $this->parent->_token . '_settings' );
-				$html .= ob_get_clean();
+        $html .= '<form method="post" action="options.php" enctype="multipart/form-data">' . "\n";
 
-				$html     .= '<p class="submit">' . "\n";
-					$html .= '<input type="hidden" name="tab" value="' . esc_attr( $tab ) . '" />' . "\n";
-					$html .= '<input name="Submit" type="submit" class="button-primary" value="' . esc_attr( __( 'Save Settings', 'jetski' ) ) . '" />' . "\n";
-				$html     .= '</p>' . "\n";
-			$html         .= '</form>' . "\n";
-		$html             .= '</div>' . "\n";
+        // Get settings fields.
+        ob_start();
+        settings_fields($this->parent->_token . '_settings');
+        do_settings_sections($this->parent->_token . '_settings');
+        $html .= ob_get_clean();
 
-		echo $html; //phpcs:ignore
-	}
+        $html .= '<p class="submit">' . "\n";
+        $html .= '<input type="hidden" name="tab" value="' . esc_attr($tab) . '" />' . "\n";
+        $html .= '<input name="Submit" type="submit" class="button-primary" value="' . esc_attr(__('Save Settings', 'jetski')) . '" />' . "\n";
+        $html .= '</p>' . "\n";
+        $html .= '</form>' . "\n";
+        $html .= '</div>' . "\n";
 
-	/**
-	 * Main jetski_Settings Instance
-	 *
-	 * Ensures only one instance of jetski_Settings is loaded or can be loaded.
-	 *
-	 * @since 1.0.0
-	 * @static
-	 * @see jetski()
-	 * @param object $parent Object instance.
-	 * @return object jetski_Settings instance
-	 */
-	public static function instance( $parent ) {
-		if ( is_null( self::$_instance ) ) {
-			self::$_instance = new self( $parent );
-		}
-		return self::$_instance;
-	} // End instance()
+        echo $html; //phpcs:ignore
+    } // End instance()
 
-	/**
-	 * Cloning is forbidden.
-	 *
-	 * @since 1.0.0
-	 */
-	public function __clone() {
-		_doing_it_wrong( __FUNCTION__, esc_html( __( 'Cloning of jetski_API is forbidden.' ) ), esc_attr( $this->parent->_version ) );
-	} // End __clone()
+    /**
+     * Cloning is forbidden.
+     *
+     * @since 1.0.0
+     */
+    public function __clone()
+    {
+        _doing_it_wrong(__FUNCTION__, esc_html(__('Cloning of jetski_API is forbidden.')), esc_attr($this->parent->_version));
+    } // End __clone()
 
-	/**
-	 * Unserializing instances of this class is forbidden.
-	 *
-	 * @since 1.0.0
-	 */
-	public function __wakeup() {
-		_doing_it_wrong( __FUNCTION__, esc_html( __( 'Unserializing instances of jetski_API is forbidden.' ) ), esc_attr( $this->parent->_version ) );
-	} // End __wakeup()
+    /**
+     * Unserializing instances of this class is forbidden.
+     *
+     * @since 1.0.0
+     */
+    public function __wakeup()
+    {
+        _doing_it_wrong(__FUNCTION__, esc_html(__('Unserializing instances of jetski_API is forbidden.')), esc_attr($this->parent->_version));
+    } // End __wakeup()
 
 }
