@@ -19,6 +19,7 @@
         "wpackagist-plugin/clean-image-filenames": "^1.4"
     },
     "require-dev": {
+        "rector/rector": "^0.17.0",
         "symfony/var-dumper": "^6.2"
     },
     "repositories": [

@@ -7,3 +7,5 @@ plugins/*
 upgrade
 uploads
 wordpress
+themes
+!themes/index.php
