@@ -7,5 +7,6 @@ plugins/*
 upgrade
 uploads
 wordpress
-themes
+themes/*
 !themes/index.php
+!themes/generatepress_child
