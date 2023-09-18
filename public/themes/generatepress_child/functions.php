@@ -18,6 +18,22 @@ add_action('woocommerce_product_query', function (WP_Query $q) {
     $q->set('tax_query', $taxQuery);
 });
 
+add_action('woosb_before_item', function (WC_Product_Simple $product, WC_Product_Woosb $product2, int $order) {
+    echo $order;
+}, accepted_args: 3);
+
+
+add_action('woosb_after_item_name', function (WC_Product_Simple $product) {
+    $constructorNums = [];
+    $data = $product->get_data();
+    if (isset($data["attributes"]['numero-constructeur'])) {
+        $constructorNums = $data["attributes"]['numero-constructeur']['data']["options"];
+    }
+    echo array_reduce($constructorNums, static function (string $r, string $num) {
+        return $r . "<span style='display: block'>$num</span>";
+    }, '');
+});
+
 if (!function_exists('woocommerce_subcategory_thumbnail')) {
     function woocommerce_subcategory_thumbnail($category)
     {

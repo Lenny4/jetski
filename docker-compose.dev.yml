@@ -5,7 +5,7 @@ services:
     image: mariadb:latest
     restart: always
     volumes:
-      - maria_data_wp:/var/lib/mysql
+      - maria_data_wp_2:/var/lib/mysql
     env_file:
       - .env
       - .env.local
@@ -23,4 +23,4 @@ services:
       - database
 
 volumes:
-  maria_data_wp:
+  maria_data_wp_2:
