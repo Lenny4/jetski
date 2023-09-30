@@ -1,6 +1,9 @@
 <?php
-
 declare(strict_types=1);
+
+define( 'SBI_ENCRYPTION_KEY', ')dBwv7I@YiwCxLRkau7((4xpmthMsXr#SNzZFyd2P^fs!H1^%Ee$DVqOKoqEjk3Z' );
+
+define( 'SBI_ENCRYPTION_SALT', 'kjhuH@Qkz5yvOcdcFodCch9t&Hs0hp3C%y8P@dtE^W@cU2$XANmVaDmk942cIkDx' );
 
 require __DIR__ . '/../vendor/autoload.php';
 
@@ -11,6 +14,8 @@ use Symfony\Component\HttpFoundation\Request;
 Dotenv::createImmutable(realpath(__DIR__ . '/../'))->safeLoad();
 
 // Set the environment type.
+define('WP_CACHE', true);
+define( 'WPCACHEHOME', '/var/www/html/public/plugins/wp-super-cache/' );
 define('WP_ENVIRONMENT_TYPE', env('WP_ENVIRONMENT_TYPE', 'production'));
 
 // Set the default WordPress theme.
@@ -47,6 +52,8 @@ define('NONCE_SALT', env('NONCE_SALT'));
 if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https') {
     $_SERVER['HTTPS'] = 'on';
 }
+
+define( 'WP_MEMORY_LIMIT', '256M' );
 
 // Set the home url to the current domain.
 define('WP_HOME', env('WP_HOME', Request::createFromGlobals()->getSchemeAndHttpHost()));
